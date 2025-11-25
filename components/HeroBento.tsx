@@ -17,23 +17,34 @@ const MatrixRain = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
+    // Handle high DPI displays
+    const dpr = window.devicePixelRatio || 1;
+    
+    let width = window.innerWidth;
+    let height = window.innerHeight;
 
-    const fontSize = 16;
-    const columns = Math.floor(width / fontSize);
-    const drops: number[] = Array(columns).fill(1);
+    const resize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+    };
+    resize();
+
+    const fontSize = 14;
+    // Calculate columns based on logical width
+    let columns = Math.floor(width / fontSize);
+    let drops: number[] = Array(columns).fill(1);
     
     // Matrix characters (Katakana + Latin + nums)
     const chars = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
     const draw = () => {
-      // Trail effect: draw a semi-transparent black rectangle over the canvas
-      // This makes previous frames fade out slowly
+      // Trail effect
       ctx.fillStyle = 'rgba(1, 3, 1, 0.05)';
       ctx.fillRect(0, 0, width, height);
 
-      ctx.fillStyle = '#22c55e'; // Brand green
       ctx.font = `${fontSize}px "JetBrains Mono"`;
 
       for (let i = 0; i < drops.length; i++) {
@@ -42,14 +53,16 @@ const MatrixRain = () => {
         // Randomly make some characters brighter/white for the "glint" effect
         if (Math.random() > 0.98) {
              ctx.fillStyle = '#fff'; 
+             ctx.shadowBlur = 8;
+             ctx.shadowColor = '#fff';
         } else {
              ctx.fillStyle = '#22c55e';
+             ctx.shadowBlur = 0;
         }
 
         ctx.fillText(text, i * fontSize, drops[i] * fontSize);
 
         // Send drop back to top randomly after it has crossed the screen
-        // Adding randomness to the reset to scatter the rain
         if (drops[i] * fontSize > height && Math.random() > 0.975) {
           drops[i] = 0;
         }
@@ -60,8 +73,10 @@ const MatrixRain = () => {
     const interval = setInterval(draw, 33); // ~30FPS
 
     const handleResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      resize();
+      // Recalculate columns on resize
+      columns = Math.floor(width / fontSize);
+      drops = Array(columns).fill(1);
     };
     window.addEventListener('resize', handleResize);
 
@@ -71,7 +86,7 @@ const MatrixRain = () => {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="w-full h-full opacity-80" />;
+  return <canvas ref={canvasRef} className="w-full h-full opacity-80" style={{ width: '100%', height: '100%' }} />;
 };
 
 // --- Decrypt Text Component ---
@@ -174,9 +189,18 @@ const HeroNeo: React.FC<HeroNeoProps> = ({ lang }) => {
          <Grid className="text-brand/20 w-12 h-12" />
       </div>
 
-      {/* HUD: Vertical Hex Stream */}
+      {/* HUD: Vertical Hex Stream (Right) */}
       <div className="absolute top-0 right-24 h-full w-px bg-brand/10 hidden lg:block overflow-hidden">
          <div className="animate-scanline text-[10px] font-mono text-brand/30 whitespace-pre opacity-50 leading-tight">
+            {Array(50).fill(0).map((_, i) => (
+               <div key={i}>{Math.random().toString(16).substr(2, 8).toUpperCase()}</div>
+            ))}
+         </div>
+      </div>
+
+      {/* HUD: Vertical Hex Stream (Left) - Added for Symmetry */}
+      <div className="absolute top-0 left-24 h-full w-px bg-brand/10 hidden lg:block overflow-hidden">
+         <div className="animate-scanline text-[10px] font-mono text-brand/30 whitespace-pre opacity-50 leading-tight" style={{ animationDelay: '2s' }}>
             {Array(50).fill(0).map((_, i) => (
                <div key={i}>{Math.random().toString(16).substr(2, 8).toUpperCase()}</div>
             ))}
