@@ -1,11 +1,145 @@
 import React, { useEffect } from 'react';
 import { Project, ProjectSection } from '../types';
-import { ArrowLeft, CheckCircle2, Sliders, Terminal, Layers, BrainCircuit, Hash, Users, Code, LayoutTemplate } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Sliders, Terminal, LayoutTemplate, Users, Code, Hash } from 'lucide-react';
 
 interface ProjectDetailProps {
   project: Project;
   onBack: () => void;
 }
+
+// Helper for simple markdown-like parsing (bolding)
+const RichText = ({ text }: { text: string }) => {
+  if (!text) return null;
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return (
+    <span className="whitespace-pre-line">
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={i} className="text-white font-bold">{part.slice(2, -2)}</strong>;
+        }
+        return part;
+      })}
+    </span>
+  );
+};
+
+// --- Sub-components moved outside to prevent re-renders ---
+
+const StandardLayout = ({ section }: { section: ProjectSection }) => (
+  <div className="glass-neo p-8 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-brand/20 transition-colors">
+      <div className="absolute top-0 right-0 w-16 h-16 bg-brand/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+      <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 relative z-10">
+        <Hash size={20} className="text-brand" />
+        {section.title}
+      </h3>
+      <div className="text-base text-zinc-200 leading-8 font-normal">
+        <RichText text={section.content} />
+      </div>
+      {section.items && (
+        <div className="mt-6 bg-black/30 p-6 rounded-xl border border-white/5">
+          <ul className="grid grid-cols-1 gap-3">
+            {section.items.map((item, i) => (
+              <li key={i} className="flex items-start gap-3 text-base text-zinc-300 leading-relaxed">
+                <CheckCircle2 size={18} className="text-brand shrink-0 mt-1" />
+                <span><RichText text={item} /></span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+  </div>
+);
+
+const GridCardsLayout = ({ section }: { section: ProjectSection }) => (
+  <div className="space-y-6">
+      <h3 className="text-2xl font-bold text-white flex items-center gap-3">
+          <Users size={20} className="text-secondary" />
+          {section.title}
+      </h3>
+      <div className="text-base text-zinc-300 mb-6 leading-relaxed">
+        <RichText text={section.content} />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {section.cards?.map((card, idx) => (
+              <div key={idx} className="glass-neo p-6 rounded-xl border border-white/5 hover:border-brand/40 hover:shadow-neon transition-all duration-300">
+                  <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center mb-4 border border-brand/20">
+                      <span className="font-mono text-brand font-bold">{idx + 1}</span>
+                  </div>
+                  <h4 className="text-lg font-bold text-white mb-3">{card.title}</h4>
+                  <p className="text-sm text-zinc-400 leading-relaxed"><RichText text={card.content} /></p>
+              </div>
+          ))}
+      </div>
+  </div>
+);
+
+const SplitLayout = ({ section }: { section: ProjectSection }) => (
+  <div className="glass-neo rounded-2xl border border-white/5 overflow-hidden grid grid-cols-1 lg:grid-cols-2">
+      <div className="p-8 border-b lg:border-b-0 lg:border-r border-white/5">
+          <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+              <LayoutTemplate size={20} className="text-brand" />
+              {section.title}
+          </h3>
+          <div className="text-base text-zinc-200 leading-8 font-normal">
+              <RichText text={section.content} />
+          </div>
+      </div>
+      <div className="bg-black/20 p-8 flex flex-col justify-center relative">
+           {/* CSS Pattern instead of external image */}
+           <div className="absolute inset-0 opacity-10" 
+                style={{ backgroundImage: 'radial-gradient(circle, #333 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+           </div>
+           {section.items && (
+               <div className="relative z-10 space-y-4">
+                   <div className="text-xs font-mono text-secondary uppercase tracking-widest mb-2">Key Outcomes</div>
+                   {section.items.map((item, i) => (
+                       <div key={i} className="flex gap-4 p-4 rounded-lg bg-black/40 border border-brand/10 hover:border-brand/30 transition-colors">
+                           <div className="mt-1 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></div>
+                           <span className="text-sm text-zinc-300 leading-relaxed"><RichText text={item} /></span>
+                       </div>
+                   ))}
+               </div>
+           )}
+      </div>
+  </div>
+);
+
+const TerminalLayout = ({ section }: { section: ProjectSection }) => (
+  <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-[#050505] shadow-2xl">
+      {/* Terminal Header */}
+      <div className="bg-zinc-900/50 px-4 py-3 flex items-center gap-2 border-b border-white/5">
+          <div className="flex gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-500/20"></div>
+              <div className="w-3 h-3 rounded-full bg-yellow-500/20"></div>
+              <div className="w-3 h-3 rounded-full bg-green-500/20"></div>
+          </div>
+          <div className="ml-4 text-xs font-mono text-zinc-500 flex items-center gap-2">
+              <Terminal size={12} />
+              <span>root@system:~/analysis</span>
+          </div>
+      </div>
+      
+      <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-1">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
+                  <Code size={20} className="text-brand" />
+                  {section.title}
+              </h3>
+              <div className="text-sm text-zinc-400 leading-7 font-mono">
+                  <RichText text={section.content} />
+              </div>
+          </div>
+          <div className="lg:col-span-2">
+              <div className="bg-black/50 rounded-lg p-6 border border-brand/10 font-mono text-xs md:text-sm text-zinc-300 overflow-x-auto custom-scrollbar">
+<pre className="text-green-400/80">
+{section.code || `// No code snippet provided.`}
+</pre>
+              </div>
+          </div>
+      </div>
+  </div>
+);
 
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack }) => {
   useEffect(() => {
@@ -19,138 +153,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onBack }) => {
     }
   };
 
-  // --- Sub-components for different layouts ---
-
-  const StandardLayout = ({ section }: { section: ProjectSection }) => (
-    <div className="glass-neo p-8 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-brand/20 transition-colors">
-        <div className="absolute top-0 right-0 w-16 h-16 bg-brand/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
-        <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 relative z-10">
-          <Hash size={20} className="text-brand" />
-          {section.title}
-        </h3>
-        <div className="text-base text-zinc-200 leading-8 whitespace-pre-line font-normal">
-          {section.content}
-        </div>
-        {section.items && (
-          <div className="mt-6 bg-black/30 p-6 rounded-xl border border-white/5">
-            <ul className="grid grid-cols-1 gap-3">
-              {section.items.map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-base text-zinc-300 leading-relaxed">
-                  <CheckCircle2 size={18} className="text-brand shrink-0 mt-1" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-    </div>
-  );
-
-  const GridCardsLayout = ({ section }: { section: ProjectSection }) => (
-    <div className="space-y-6">
-        <h3 className="text-2xl font-bold text-white flex items-center gap-3">
-            <Users size={20} className="text-secondary" />
-            {section.title}
-        </h3>
-        <div className="text-base text-zinc-300 mb-6 leading-relaxed whitespace-pre-line">{section.content}</div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {section.cards?.map((card, idx) => (
-                <div key={idx} className="glass-neo p-6 rounded-xl border border-white/5 hover:border-brand/40 hover:shadow-neon transition-all duration-300">
-                    <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center mb-4 border border-brand/20">
-                        <span className="font-mono text-brand font-bold">{idx + 1}</span>
-                    </div>
-                    <h4 className="text-lg font-bold text-white mb-3">{card.title}</h4>
-                    <p className="text-sm text-zinc-400 leading-relaxed">{card.content}</p>
-                </div>
-            ))}
-        </div>
-    </div>
-  );
-
-  const SplitLayout = ({ section }: { section: ProjectSection }) => (
-    <div className="glass-neo rounded-2xl border border-white/5 overflow-hidden grid grid-cols-1 lg:grid-cols-2">
-        <div className="p-8 border-b lg:border-b-0 lg:border-r border-white/5">
-            <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                <LayoutTemplate size={20} className="text-brand" />
-                {section.title}
-            </h3>
-            <div className="text-base text-zinc-200 leading-8 whitespace-pre-line font-normal">
-                {section.content}
-            </div>
-        </div>
-        <div className="bg-black/20 p-8 flex flex-col justify-center relative">
-             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
-             {section.items && (
-                 <div className="relative z-10 space-y-4">
-                     <div className="text-xs font-mono text-secondary uppercase tracking-widest mb-2">Key Outcomes</div>
-                     {section.items.map((item, i) => (
-                         <div key={i} className="flex gap-4 p-4 rounded-lg bg-black/40 border border-brand/10 hover:border-brand/30 transition-colors">
-                             <div className="mt-1 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></div>
-                             <span className="text-sm text-zinc-300 leading-relaxed">{item}</span>
-                         </div>
-                     ))}
-                 </div>
-             )}
-        </div>
-    </div>
-  );
-
-  const TerminalLayout = ({ section }: { section: ProjectSection }) => (
-    <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-[#050505] shadow-2xl">
-        {/* Terminal Header */}
-        <div className="bg-zinc-900/50 px-4 py-3 flex items-center gap-2 border-b border-white/5">
-            <div className="flex gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500/20"></div>
-                <div className="w-3 h-3 rounded-full bg-yellow-500/20"></div>
-                <div className="w-3 h-3 rounded-full bg-green-500/20"></div>
-            </div>
-            <div className="ml-4 text-xs font-mono text-zinc-500 flex items-center gap-2">
-                <Terminal size={12} />
-                <span>root@ginkgo-system:~/optimization</span>
-            </div>
-        </div>
-        
-        <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
-                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
-                    <Code size={20} className="text-brand" />
-                    {section.title}
-                </h3>
-                <div className="text-sm text-zinc-400 leading-7 font-mono">
-                    {section.content}
-                </div>
-            </div>
-            <div className="lg:col-span-2">
-                <div className="bg-black/50 rounded-lg p-6 border border-brand/10 font-mono text-xs md:text-sm text-zinc-300 overflow-x-auto custom-scrollbar">
-<pre className="text-green-400/80">
-{`// Analyzing Component Structure...
-> DETECTED_DUPLICATION: 42%
-> REFACTORING_TARGET: Header_Layout.tsx
-
-const optimizeLayout = async () => {
-  const currentHeight = await measureHeader();
-  
-  if (currentHeight > 120) {
-     // AI Suggested Optimization
-     return compressNavigation({
-       mode: 'compact',
-       preserveContext: true
-     });
-  }
-};
-
-// STATUS: OPTIMIZATION COMPLETE
-// HEAD_SPACE_SAVED: 60%`}
-</pre>
-                </div>
-            </div>
-        </div>
-    </div>
-  );
-
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-10 duration-500">
+    <div className="animate-in fade-in slide-in-from-bottom-10 duration-500 min-h-screen bg-neo-bg">
       
       {/* Immersive Hero */}
       <div className="relative h-[60vh] md:h-[70vh] w-full overflow-hidden">
@@ -228,9 +232,9 @@ const optimizeLayout = async () => {
                 <Terminal size={18} className="text-brand" />
                 Project Background
                 </h3>
-                <p className="text-lg text-zinc-200 leading-relaxed font-normal whitespace-pre-line">
-                {project.caseStudy.problem}
-                </p>
+                <div className="text-lg text-zinc-200 leading-relaxed font-normal">
+                   <RichText text={project.caseStudy.problem} />
+                </div>
             </section>
 
             {/* Role Section */}
@@ -260,9 +264,9 @@ const optimizeLayout = async () => {
                 <Sliders className="text-brand" />
                 Summary & Outcome
                 </h3>
-                <p className="text-lg text-zinc-200 leading-relaxed font-normal">
-                {project.caseStudy.solution}
-                </p>
+                <div className="text-lg text-zinc-200 leading-relaxed font-normal">
+                   <RichText text={project.caseStudy.solution} />
+                </div>
             </section>
 
         </div>

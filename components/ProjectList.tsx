@@ -62,8 +62,8 @@ const ProjectList: React.FC<ProjectListProps> = ({ onSelectProject, labels }) =>
                <h3 className="text-2xl font-bold text-white mb-3 leading-tight group-hover:text-brand transition-colors">
                  {project.title}
                </h3>
-               {/* Updated Contrast and Weight */}
-               <p className="text-base text-zinc-300 mb-8 font-normal leading-relaxed">{project.description}</p>
+               {/* Updated Contrast and Weight with Line Clamp */}
+               <p className="text-base text-zinc-300 mb-8 font-normal leading-relaxed line-clamp-4">{project.description}</p>
               
                <div className="flex items-center gap-6 pt-6 border-t border-white/5">
                   {project.metrics.slice(0, 2).map((metric, i) => (

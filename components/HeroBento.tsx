@@ -119,7 +119,7 @@ const DecryptText = ({ text, className = "" }: { text: string, className?: strin
 
   return (
     <span 
-      className={`inline-block cursor-default ${className}`}
+      className={`inline-block cursor-default font-mono ${className}`}
       onMouseEnter={() => { setIsHovering(true); scramble(); }}
       onMouseLeave={() => setIsHovering(false)}
     >
@@ -144,7 +144,7 @@ const HeroNeo: React.FC<HeroNeoProps> = ({ lang }) => {
 
   return (
     <section 
-      className="relative w-full h-screen overflow-hidden perspective-container bg-[#010301] flex items-center justify-center"
+      className="relative w-full min-h-[100dvh] overflow-hidden perspective-container bg-[#010301] flex items-center justify-center"
     >
       
       {/* 1. Base Layer: Static 3D Grid Plane (Depth) */}
