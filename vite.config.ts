@@ -7,5 +7,10 @@ export default defineConfig({
   define: {
     // Polyfill process.env for the geminiService
     'process.env.API_KEY': JSON.stringify(process.env.API_KEY || '')
+  },
+  build: {
+    rollupOptions: {
+      external: ['@google/genai']
+    }
   }
 });
